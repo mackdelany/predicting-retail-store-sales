@@ -8,6 +8,8 @@ def add_lags_to_single_store(raw, column, lags):
 
     assert len(set(raw.loc[:,'Store'])) == 1
 
+    raw = raw.sort_values(by='Date', ascending=True)
+
     data = raw.loc[:, column]
     out = [data.shift(l) for l in range(lags+1)]
     out = pd.concat(out, axis=1)
