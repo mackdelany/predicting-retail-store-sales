@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import TimeSeriesSplit
 
-from features import lag_all_stores, add_lags_to_single_store, add_sales_per_customer, add_datetime_features_day_of_week
+from features import lag_all_stores, add_lags_to_single_store, add_sales_per_customer, add_datetime_features_day_of_week, add_datetime_features_week
 
 validation_sets = 3
 max_train_size = 0.95
@@ -23,6 +23,9 @@ data['Sales'] = data.groupby(['Store','DayOfWeek'])['Sales'].transform(lambda x:
 
 data = data.dropna(axis=1)
 data = data.drop('DayOfWeek', axis=1)
+
+data = add_datetime_features_day_of_week(data)
+data = add_datetime_features_week(data)
 
 
 tscv = TimeSeriesSplit(max_train_size=round(max_train_size*data.shape[0]), n_splits=validation_sets)
@@ -50,7 +53,7 @@ lag_column = 'Sales'
 lags=2
 
 data = lag_all_stores(data, lag_column, lags)
-data.dropna(subset=['Sales-lag-1','Sales-lag-2'], axis=0)
+data = data.dropna(subset=['Sales-lag-1','Sales-lag-2'], axis=0)
 
 tscv = TimeSeriesSplit(max_train_size=round(max_train_size*data.shape[0]), n_splits=validation_sets)
 
@@ -66,3 +69,6 @@ for train_index, test_index in tscv.split(data):
     data.iloc[test_index,:]['Sales'].to_csv('data/scenario_2_lags/' + fold_name + '/' + fold_name + '_test_y.csv')
     
     fold += 1
+
+
+print(data)

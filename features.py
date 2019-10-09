@@ -4,8 +4,6 @@ import numpy as np
 #  factor out yesterdays sales (target engineering)
 #  holidays
 
-
-
 def lag_all_stores(raw, column, lags):
 
     raw['Sales-lag-1'] = np.nan
@@ -22,8 +20,6 @@ def lag_all_stores(raw, column, lags):
         raw.loc[raw['Store'] == store, 'Sales-lag-2'] = store_dataframe['Sales-lag-2']
 
     return raw
-
-
 
 def add_lags_to_single_store(raw, column, lags):
 
@@ -54,20 +50,19 @@ def add_sales_per_customer(historical, test):
     return test
 
 def add_datetime_features_day_of_week(data):
-    data.index = pd.to_datetime(data.loc[:, 'Date'])
-    day = data.index.dayofweek
+    data['day'] = pd.to_datetime(data.loc[:, 'Date'])
+    day = data['day'].dt.dayofweek
     data['day-of-week-sin'] = np.sin(2 * np.pi * day/23.0)
     data['day-of-week-cos'] = np.cos(2 * np.pi * day/23.0)
-    return data
+    return data.drop('day', axis=1)
 
 
 def add_datetime_features_week(data):
-    data.index = pd.to_datetime(data.loc[:, 'Date'])
-    week = data.index.week
-    # import pdb; pdb.set_trace()
-    data['month-sin'] = np.sin(2 * np.pi * week/52.0)
-    data['month-cos'] = np.cos(2 * np.pi * week/52.0)
-    return data
+    data['week'] = pd.to_datetime(data.loc[:, 'Date'])
+    week = data['week'].dt.week
+    data['month-sin'] = np.sin(2 * np.pi * week/51.0)
+    data['month-cos'] = np.cos(2 * np.pi * week/51.0)
+    return data.drop('week', axis=1)
 
 #  linear trend
 
