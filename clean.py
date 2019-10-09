@@ -23,7 +23,9 @@ for train_index, test_index in tscv.split(data):
     
     fold_name = 'fold' + str(fold)
     
-    data.iloc[train_index,:].to_csv('data/' + fold_name + '/' + fold_name + '_train.csv')
-    data.iloc[test_index,:].to_csv('data/' + fold_name + '/' + fold_name + '_test.csv')
+    data.iloc[train_index,:].drop('Sales',axis=1).to_csv('data/' + fold_name + '/' + fold_name + '_train_X.csv')
+    data.iloc[train_index,:]['Sales'].to_csv('data/' + fold_name + '/' + fold_name + '_train_y.csv')
+    data.iloc[test_index,:].drop('Sales',axis=1).to_csv('data/' + fold_name + '/' + fold_name + '_test_X.csv')
+    data.iloc[test_index,:]['Sales'].to_csv('data/' + fold_name + '/' + fold_name + '_test_y.csv')
     
     fold += 1
