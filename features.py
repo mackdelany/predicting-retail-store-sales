@@ -4,9 +4,11 @@ import numpy as np
 #  factor out yesterdays sales (target engineering)
 #  holidays
 
-def add_lags(raw, column, lags):
+def add_lags_to_single_store(raw, column, lags):
 
-    data = raw.loc[:, 'A']
+    assert len(set(raw.loc[:,'Store'])) == 1
+
+    data = raw.loc[:, column]
     out = [data.shift(l) for l in range(lags+1)]
     out = pd.concat(out, axis=1)
     out.columns = [column+'-lag-'+str(l) for l in range(lags+1)]
