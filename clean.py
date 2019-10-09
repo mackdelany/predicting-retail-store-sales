@@ -27,6 +27,7 @@ data = data.drop('DayOfWeek', axis=1)
 data = add_datetime_features_day_of_week(data)
 data = add_datetime_features_week(data)
 
+data = data.drop('Date', axis=1)
 
 tscv = TimeSeriesSplit(max_train_size=round(max_train_size*data.shape[0]), n_splits=validation_sets)
 
