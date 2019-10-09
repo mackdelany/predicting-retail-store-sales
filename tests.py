@@ -5,7 +5,8 @@ def test_lagged_values():
     test = pd.DataFrame(
         {'A': [10, 20, 30, 40, 50],
          'B': [100, 200, 300, 400, 500],
-         'Store': ['one'] * 5}
+         'Store': ['one'] * 5,
+         'Date': pd.date_range(start='2018-01-01', periods=5, freq='1d')}
     )
     data = add_lags_to_single_store(test, 'A', lags=2)
     np.testing.assert_array_equal(data.loc[:, 'A-lag-1'].values, np.array([np.nan, 10, 20, 30, 40]))
@@ -65,3 +66,32 @@ def test_month():
     #  check that we do have unique values across a longer time period
     assert features.iloc[:, :].duplicated().any()
 
+
+def test_lag_all_stores():
+    test1 = pd.DataFrame(
+        {'A': [10, 20, 30, 40, 50],
+         'B': [100, 200, 300, 400, 500],
+         'Store': ['one'] * 5,
+         'Date': pd.date_range(start='2018-01-01', periods=5, freq='1d')}
+    )
+
+    test2 = pd.DataFrame(
+        {'A': [10, 20, 30, 40, 50],
+         'B': [100, 200, 300, 400, 500],
+         'Store': ['two'] * 5,
+         'Date': pd.date_range(start='2018-01-01', periods=5, freq='1d')}
+    )
+
+    test = pd.concat([test1, test2], axis=0)
+
+    out = lag_all_stores(test, 'B', 2)
+
+    one_test = out[out.loc[:, 'Store'] == 'one']
+    np.testing.assert_array_equal(one_test.loc[:, 'B-lag-1'].values, np.array([np.nan, 100, 200, 300, 400]))
+    np.testing.assert_array_equal(one_test.loc[:, 'B-lag-2'].values, np.array([np.nan, np.nan, 100, 200, 300]))
+
+
+    out = lag_all_stores(test, 'A', 2)
+    two_test = out[out.loc[:, 'Store'] == 'two']
+    np.testing.assert_array_equal(two_test.loc[:, 'A-lag-1'].values, np.array([np.nan, 10, 20, 30, 40]))
+    np.testing.assert_array_equal(two_test.loc[:, 'A-lag-2'].values, np.array([np.nan, np.nan, 10, 20, 30]))
