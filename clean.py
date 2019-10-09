@@ -11,8 +11,10 @@ train = pd.read_csv('data/raw/train.csv')
 data = train[~train['Store'].isna()]
 data = data.merge(store, how='left', left_on='Store', right_on='Store')
 
+data = data.sort_values(by=['Date','Store'], ascending=['True','True']).reset_index(drop=True)
 
-
+data['Date'] = pd.to_datetime(data['Date'])
+data['DayOfWeek'] = data['Date'].dt.dayofweek
 
 
 tscv = TimeSeriesSplit(max_train_size=round(max_train_size*data.shape[0]), n_splits=validation_sets)
