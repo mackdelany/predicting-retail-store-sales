@@ -16,6 +16,11 @@ data = data.sort_values(by=['Date','Store'], ascending=['True','True']).reset_in
 data['Date'] = pd.to_datetime(data['Date'])
 data['DayOfWeek'] = data['Date'].dt.dayofweek
 
+data['Customers'] = data.groupby(['Store','DayOfWeek'])['Customers'].transform(lambda x: x.fillna(x.mean()))
+data['Sales'] = data.groupby(['Store','DayOfWeek'])['Sales'].transform(lambda x: x.fillna(x.mean()))
+
+data = data.dropna(axis=1)
+data = data.drop('DayOfWeek', axis=1)
 
 tscv = TimeSeriesSplit(max_train_size=round(max_train_size*data.shape[0]), n_splits=validation_sets)
 
