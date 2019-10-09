@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import TimeSeriesSplit
 
-from features import add_lags_to_single_store, add_sales_per_customer, add_datetime_features_day_of_week
+from features import lag_all_stores, add_lags_to_single_store, add_sales_per_customer, add_datetime_features_day_of_week
 
 validation_sets = 3
 max_train_size = 0.95
@@ -25,20 +25,7 @@ data = data.dropna(axis=1)
 data = data.drop('DayOfWeek', axis=1)
 
 
-lag_column = 'Sales'
-
-for Store in data.Store:
-
-    store_dataframe = data[data['Store'] == Store]
-    store_dataframe = add_lags_to_single_store(store_dataframe, lag_column, 2)
-
-    data.loc[data['Store'] == Store, 'Sales-lag-1'] = store_dataframe['Sales-lag-1']
-    data.loc[data['Store'] == Store, 'Sales-lag-2'] = store_dataframe['Sales-lag-2']
-
-print(data.head())
-
-
-"""tscv = TimeSeriesSplit(max_train_size=round(max_train_size*data.shape[0]), n_splits=validation_sets)
+tscv = TimeSeriesSplit(max_train_size=round(max_train_size*data.shape[0]), n_splits=validation_sets)
 
 fold=0
 
@@ -46,9 +33,36 @@ for train_index, test_index in tscv.split(data):
     
     fold_name = 'fold' + str(fold)
     
-    data.iloc[train_index,:].drop('Sales',axis=1).to_csv('data/' + fold_name + '/' + fold_name + '_train_X.csv')
-    data.iloc[train_index,:]['Sales'].to_csv('data/' + fold_name + '/' + fold_name + '_train_y.csv')
-    data.iloc[test_index,:].drop('Sales',axis=1).to_csv('data/' + fold_name + '/' + fold_name + '_test_X.csv')
-    data.iloc[test_index,:]['Sales'].to_csv('data/' + fold_name + '/' + fold_name + '_test_y.csv')
+    data.iloc[train_index,:].drop('Sales',axis=1).to_csv('data/scenario_1_control/' + fold_name + '/' + fold_name + '_train_X.csv')
+    data.iloc[train_index,:]['Sales'].to_csv('data/scenario_1_control/' + fold_name + '/' + fold_name + '_train_y.csv')
+    data.iloc[test_index,:].drop('Sales',axis=1).to_csv('data/scenario_1_control/' + fold_name + '/' + fold_name + '_test_X.csv')
+    data.iloc[test_index,:]['Sales'].to_csv('data/scenario_1_control/' + fold_name + '/' + fold_name + '_test_y.csv')
+
+    data.iloc[train_index,:].drop('Sales',axis=1).to_csv('data/scenario_3_predicted_lags/' + fold_name + '/' + fold_name + '_train_X.csv')
+    data.iloc[train_index,:]['Sales'].to_csv('data/scenario_3_predicted_lags/' + fold_name + '/' + fold_name + '_train_y.csv')
+    data.iloc[test_index,:].drop('Sales',axis=1).to_csv('data/scenario_3_predicted_lags/' + fold_name + '/' + fold_name + '_test_X.csv')
+    data.iloc[test_index,:]['Sales'].to_csv('data/scenario_3_predicted_lags/' + fold_name + '/' + fold_name + '_test_y.csv')
     
-    fold += 1"""
+    fold += 1
+
+
+lag_column = 'Sales'
+lags=2
+
+data = lag_all_stores(data, lag_column, lags)
+data.dropna(subset=['Sales-lag-1','Sales-lag-2'], axis=0)
+
+tscv = TimeSeriesSplit(max_train_size=round(max_train_size*data.shape[0]), n_splits=validation_sets)
+
+fold = 0
+
+for train_index, test_index in tscv.split(data):
+    
+    fold_name = 'fold' + str(fold)
+    
+    data.iloc[train_index,:].drop('Sales',axis=1).to_csv('data/scenario_2_lags/' + fold_name + '/' + fold_name + '_train_X.csv')
+    data.iloc[train_index,:]['Sales'].to_csv('data/scenario_2_lags/' + fold_name + '/' + fold_name + '_train_y.csv')
+    data.iloc[test_index,:].drop('Sales',axis=1).to_csv('data/scenario_2_lags/' + fold_name + '/' + fold_name + '_test_X.csv')
+    data.iloc[test_index,:]['Sales'].to_csv('data/scenario_2_lags/' + fold_name + '/' + fold_name + '_test_y.csv')
+    
+    fold += 1

@@ -4,6 +4,27 @@ import numpy as np
 #  factor out yesterdays sales (target engineering)
 #  holidays
 
+
+
+def lag_all_stores(raw, column, lags):
+
+    raw['Sales-lag-1'] = np.nan
+    raw['Sales-lag-2'] = np.nan
+
+    for store in raw.Store.unique():
+
+        print('Processing Store ' + str(store))
+
+        store_dataframe = raw[raw['Store'] == store]
+        store_dataframe = add_lags_to_single_store(store_dataframe.drop(['Sales-lag-1','Sales-lag-2'], axis=1), column, 2)
+
+        raw.loc[raw['Store'] == store, 'Sales-lag-1'] = store_dataframe['Sales-lag-1']
+        raw.loc[raw['Store'] == store, 'Sales-lag-2'] = store_dataframe['Sales-lag-2']
+
+    return raw
+
+
+
 def add_lags_to_single_store(raw, column, lags):
 
     assert len(set(raw.loc[:,'Store'])) == 1
