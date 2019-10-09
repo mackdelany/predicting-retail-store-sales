@@ -61,17 +61,53 @@ def test_sales_per_customer():
 
 def add_datetime_features_day_of_week(data):
     data.index = pd.to_datetime(data.loc[:, 'Date'])
-    data['day-of-week-sin'] = np.sin(2 * np.pi * dataset[PresentDateTime]/23.0)
-    data['day-of-week-cos'] = np.cos(2 * np.pi * dataset[PresentDateTime]/23.0)
+    day = data.index.dayofweek
+    data['day-of-week-sin'] = np.sin(2 * np.pi * day/23.0)
+    data['day-of-week-cos'] = np.cos(2 * np.pi * day/23.0)
     return data
 
 
-def add_datetime_features_day_of_week(data):
+def add_datetime_features_week(data):
     data.index = pd.to_datetime(data.loc[:, 'Date'])
-    data['day-of-week-sin'] = np.sin(2 * np.pi * dataset[PresentDateTime]/23.0)
-    data['day-of-week-cos'] = np.cos(2 * np.pi * dataset[PresentDateTime]/23.0)
+    week = data.index.week
+    # import pdb; pdb.set_trace()
+    data['month-sin'] = np.sin(2 * np.pi * week/52.0)
+    data['month-cos'] = np.cos(2 * np.pi * week/52.0)
     return data
 
-#  day of week, month of year, linear trend
+#  linear trend
+
+def test_day_of_week():
+    test_index = pd.DatetimeIndex(start='01/01/2018', end='31/12/2018', freq='d')
+    test_df = pd.DataFrame(np.random.uniform(size=test_index.shape[0]), index=test_index)
+    test_df.loc[:, 'Date'] = test_index
+
+    features = add_datetime_features_day_of_week(test_df)
+
+    features = features.loc[:, ['day-of-week-sin', 'day-of-week-cos']]
+
+    assert features.iloc[0, :].values.all() == features.iloc[7, :].values.all()
+    assert features.iloc[14, :].values.all() == features.iloc[21, :].values.all()
+    assert not np.array_equal(features.iloc[:, 0].values, features.iloc[:, 1].values)
+
+    #  check that each value is unique for the entire day
+    assert not features.iloc[:6, :].duplicated().any()
+    #  check that we do have unique values across a longer time period
+    assert features.iloc[:, :].duplicated().any()
 
 
+def test_month():
+    test_index = pd.DatetimeIndex(start='01/01/2018', end='31/12/2018', freq='d')
+    test_df = pd.DataFrame(np.random.uniform(size=test_index.shape[0]), index=test_index)
+    test_df.loc[:, 'Date'] = test_index
+
+    features = add_datetime_features_week(test_df)
+
+    features = features.loc[:, ['month-sin', 'month-cos']]
+
+    assert features.iloc[0, :].values.all() == features.iloc[32, :].values.all()
+    assert features.iloc[42, :].values.all() == features.iloc[72, :].values.all()
+    assert not np.array_equal(features.iloc[:, 0].values, features.iloc[:, 1].values)
+
+    #  check that we do have unique values across a longer time period
+    assert features.iloc[:, :].duplicated().any()
