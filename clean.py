@@ -3,6 +3,7 @@ import os
 
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import TimeSeriesSplit
 
 from features import lag_all_stores, add_lags_to_single_store, add_sales_per_customer, add_datetime_features_day_of_week, add_datetime_features_week
@@ -21,9 +22,16 @@ if __name__ == '__main__':
     train = pd.read_csv('data/raw/train.csv')
     print('train shape {}'.format(train.shape))
 
-    #  does this do anything?
+    #  dropping rows with missing stores?
+    #  is the order of the store always the same?
     data = train[~train['Store'].isna()]
-    print('train shape {}'.format(train.shape))
+    print('train shape {}'.format(data.shape))
+
+    #  drop zero target
+    mask = data.loc[:, 'Sales'] != 0
+    data = data.loc[mask, :]
+    print('train shape {}'.format(data.shape))
+    import pdb; pdb.set_trace()
 
     #  why merge with stores here?
     data = data.merge(store, how='left', left_on='Store', right_on='Store')
@@ -40,6 +48,18 @@ if __name__ == '__main__':
     new_cols = data.columns
     print('dropping {} columns due to nulls'.format(len(old_cols) - len(new_cols)))
     print('those cols are {}'.format(set(old_cols).difference(set(new_cols))))
+
+    #  think we need this ?
+    le = LabelEncoder()
+    data.loc[:, 'Store'] = le.fit_transform(data['Store'])
+
+    cleanup = {
+                "StateHoliday": {'0': 0, 'a': 1, 'b': 2, 'c': 3},
+                "Assortment":  {'a': 0, 'b': 1, 'c': 2},
+                "StoreType":  {'a': 0, 'b': 1, 'c': 2, 'd': 3},
+                "PromoInterval":  {'no-promo': 0, 'Feb,May,Aug,Nov': 1, 'Jan,Apr,Jul,Oct': 2, 'Mar,Jun,Sept,Dec': 3}
+            }
+    data.replace(cleanup, inplace=True)
 
     data = data.drop('DayOfWeek', axis=1)
     data = add_datetime_features_day_of_week(data)
@@ -68,12 +88,12 @@ if __name__ == '__main__':
             fold_name = 'fold' + str(fold)
             os.makedirs(base + fold_name, exist_ok=True)
 
-            data.iloc[train_index,:].drop('Sales',axis=1).to_csv(base + fold_name + '/' + '_train_X.csv', index=False)
-            data.iloc[train_index,:]['Sales'].to_csv(base + fold_name + '/' + '_train_y.csv', index=False)
-            data.iloc[test_index,:].drop('Sales',axis=1).to_csv(base + fold_name + '/' + '_test_X.csv', index=False)
-            data.iloc[test_index,:]['Sales'].to_csv(base + fold_name + '/' + '_test_y.csv', index=False)
+            data.iloc[train_index,:].drop('Sales',axis=1).to_csv(base + fold_name + '/' + 'train_X.csv', index=False)
+            data.iloc[train_index,:]['Sales'].to_csv(base + fold_name + '/' + 'train_y.csv', index=False, header=True)
+            data.iloc[test_index,:].drop('Sales',axis=1).to_csv(base + fold_name + '/' + 'test_X.csv', index=False)
+            data.iloc[test_index,:]['Sales'].to_csv(base + fold_name + '/' + 'test_y.csv', index=False, header=True)
         print('done for {}'.format(base))
 
     split_dataset(data, 'data/scenario_1_control/', validation_sets)
-    split_dataset(data2, 'data/scenario_2_lags', validation_sets)
+    split_dataset(data2, 'data/scenario_2_lags/', validation_sets)
     split_dataset(data, 'data/scenario_3_pred/', validation_sets)

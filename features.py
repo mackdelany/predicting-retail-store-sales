@@ -7,7 +7,9 @@ import numpy as np
 
 def lag_all_stores(raw, column, lags):
     out = []
-    for store in raw.Store.unique():
+    stores = raw.Store.unique()
+    assert len(stores) == max(stores) + 1  # is this right???
+    for store in stores:
         print('Processing Store ' + str(store))
         store_dataframe = raw[raw['Store'] == store]
         store_dataframe = add_lags_to_single_store(store_dataframe, column, lags)
