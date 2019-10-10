@@ -40,8 +40,15 @@ if __name__ == '__main__':
     data['Date'] = pd.to_datetime(data['Date'])
     data['DayOfWeek'] = data['Date'].dt.dayofweek
 
+    print('Filling customer and sales nulls with store / day of week mean')
     data['Customers'] = data.groupby(['Store','DayOfWeek'])['Customers'].transform(lambda x: x.fillna(x.mean()))
+    data['Customers'] = data.groupby(['Store'])['Customers'].transform(lambda x: x.fillna(x.mean()))
+    data['Customers'] = data['Customers'].transform(lambda x: x.fillna(x.mean()))
     data['Sales'] = data.groupby(['Store','DayOfWeek'])['Sales'].transform(lambda x: x.fillna(x.mean()))
+    data['Sales'] = data.groupby(['Store'])['Sales'].transform(lambda x: x.fillna(x.mean()))
+    print('Nulls after filling:')
+    print('Customers {}'.format(data.Customers.isna().sum()))
+    print('Sales {}'.format(data.Sales.isna().sum()))
 
     assert sum(data.loc[:, 'Store'].isnull()) == 0
     data = mean_encode(data, col='Store', on='Sales')

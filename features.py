@@ -51,9 +51,9 @@ def add_sales_per_customer(historical, test):
     data = historical.groupby('Store').mean()
     data.loc[:, 'sales-per-customer'] = data.loc[:, 'Sales'] / data.loc[:, 'Customers']
     data = data.loc[:, ['Customers', 'sales-per-customer']]
-    data.columns = ['customers', 'sales-per-customer']
+    data.columns = ['mean-customers', 'sales-per-customer']
     data.fillna({
-        'customers': np.mean(data.loc[:, 'customers']),
+        'mean-customers': np.mean(data.loc[:, 'mean-customers']),
         'sales-per-customer': np.mean(data.loc[:, 'sales-per-customer'])
     }, inplace=True)
     test = test.merge(data, on='Store')
