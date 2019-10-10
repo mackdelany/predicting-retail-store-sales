@@ -57,9 +57,11 @@ if __name__ == '__main__':
 
     #  drop zero target
     print('dropping target')
+    print('train shape before drop {}'.format(data.shape))
     mask = data.loc[:, 'Sales'] != 0
     data = data.loc[mask, :]
-    print('train shape {}'.format(data.shape))
+    data = data.dropna(subset='Sales')
+    print('train shape after drop {}'.format(data.shape))
 
     import pdb; pdb.set_trace()
     old_cols = data.columns
