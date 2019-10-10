@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import TimeSeriesSplit
 
-from features import lag_all_stores, add_lags_to_single_store, add_sales_per_customer, add_datetime_features_day_of_week, add_datetime_features_week, mean_encode, identify_competition_and_promo_start_date, identify_whether_promo2_running
+from features import lag_all_stores, add_lags_to_single_store, add_sales_per_customer, add_datetime_features_day_of_week, add_datetime_features_week, mean_encode, identify_competition_and_promo_start_date, identify_whether_promo2_or_competition_running
 
 
 if __name__ == '__main__':
@@ -64,8 +64,8 @@ if __name__ == '__main__':
     }
     data.replace(cleanup, inplace=True)
 
-    print('Identifying whether promo2 running on a day')
-    data = identify_whether_promo2_running(data)
+    print('Identifying whether promo2 or competition running on a day')
+    data = identify_whether_promo2_or_competition_running(data)
 
     data = data.drop(['DayOfWeek', 'PromoInterval', 'promoMonths', 'month_test'], axis=1)
     data = add_datetime_features_day_of_week(data)

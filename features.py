@@ -126,7 +126,9 @@ def identify_competition_and_promo_start_date(store):
 
     
 
-def identify_whether_promo2_running(merged_dataset):
+def identify_whether_promo2_or_competition_running(merged_dataset):
+
+    merged_dataset['Competition'] = (merged_dataset.competitionOpenDate <= merged_dataset.Date).astype(int)
 
     merged_dataset['PromoInterval'] = merged_dataset['PromoInterval'].fillna('no_promo').astype(str)
 
