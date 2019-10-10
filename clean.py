@@ -41,7 +41,9 @@ if __name__ == '__main__':
     data['Customers'] = data.groupby(['Store','DayOfWeek'])['Customers'].transform(lambda x: x.fillna(x.mean()))
     data['Sales'] = data.groupby(['Store','DayOfWeek'])['Sales'].transform(lambda x: x.fillna(x.mean()))
 
+    assert sum(data.loc[:, 'Store'].isnull()) == 0
     data = mean_encode(data, col='Store', on='Sales')
+    assert sum(data.loc[:, 'Store'].isnull()) == 0
 
     cleanup = {
         "StateHoliday": {'0': 0, 'a': 1, 'b': 2, 'c': 3},
@@ -54,16 +56,17 @@ if __name__ == '__main__':
     data = data.drop('DayOfWeek', axis=1)
     data = add_datetime_features_day_of_week(data)
     data = add_datetime_features_week(data)
+    assert sum(data.loc[:, 'Store'].isnull()) == 0
 
     #  drop zero target
     print('dropping target')
     print('train shape before drop {}'.format(data.shape))
     mask = data.loc[:, 'Sales'] != 0
     data = data.loc[mask, :]
-    data = data.dropna(subset='Sales')
+    data = data.dropna(subset=['Sales'], axis=0)
     print('train shape after drop {}'.format(data.shape))
 
-    import pdb; pdb.set_trace()
+    assert sum(data.loc[:, 'Store'].isnull()) == 0
     old_cols = data.columns
     data = data.dropna(axis=1)
     new_cols = data.columns
@@ -73,6 +76,8 @@ if __name__ == '__main__':
     print(' ')
     print('data shape before split {}'.format(data.shape))
     print(data.loc[:, 'Date'].iloc[0], data.loc[:, 'Date'].iloc[-1])
+
+    assert(sum(data.loc[:, 'Sales'] == 0)) == 0
 
     lag_column = 'Sales'
     lags = 2

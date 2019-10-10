@@ -10,6 +10,7 @@ def mean_encode(data, col, on):
     group = data.groupby(col).mean()
     mapper = {k: v for k, v in zip(group.index, group.loc[:, on].values)}
     data.loc[:, col] = data.loc[:, col].replace(mapper)
+    data.loc[:, col].fillna(value=np.mean(data.loc[:, col]), inplace=True)
     return data
 
 
