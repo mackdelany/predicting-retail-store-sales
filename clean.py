@@ -67,9 +67,9 @@ if __name__ == '__main__':
     print('Identifying whether promo2 running on a day')
     data = identify_whether_promo2_running(data)
 
-    data = data.drop('DayOfWeek', axis=1)
-    # data = add_datetime_features_day_of_week(data)
-    # data = add_datetime_features_week(data)
+    data = data.drop(['DayOfWeek', 'PromoInterval', 'promoMonths', 'month_test'], axis=1)
+    data = add_datetime_features_day_of_week(data)
+    data = add_datetime_features_week(data)
     data.loc[:, 'month'] = data.loc[:, 'Date'].dt.month
     data.loc[:, 'week'] = data.loc[:, 'Date'].dt.week
     data.loc[:, 'day-of-week'] = data.loc[:, 'Date'].dt.dayofweek
@@ -83,16 +83,17 @@ if __name__ == '__main__':
     data = data.dropna(subset=['Sales'], axis=0)
     print('train shape after drop of zero sales {}'.format(data.shape))
 
-    fill_with_token = ['Promo', 'StateHoliday']
+    fill_with_token = ['Promo', 'StateHoliday', 'SchoolHoliday']
     for tok in fill_with_token:
         data.loc[:, tok] = data.loc[:, tok].fillna(0)
         assert sum(data.loc[:, tok].isnull()) == 0
+
+    data.loc[:, 'CompetitionDistance'].fillna(data.loc[:, 'CompetitionDistance'].median(), inplace=True)
 
     assert sum(data.loc[:, 'Store'].isnull()) == 0
     for col in data.columns:
         print(col, ' - ', sum(data.loc[:, col].isnull()))
 
-    import pdb; pdb.set_trace()
     old_cols = data.columns
     data = data.dropna(axis=1)
     new_cols = data.columns
