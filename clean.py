@@ -78,7 +78,8 @@ if __name__ == '__main__':
     fill_with_token = ['Promo', 'StateHoliday']
 
     for tok in fill_with_token:
-        data.loc[:, tok].fillna(0, inplace=True)
+        data.loc[:, tok] = data.loc[:, tok].fillna(0)
+        assert sum(data.loc[:, tok].isnull()) == 0
 
     import pdb; pdb.set_trace()
     old_cols = data.columns
