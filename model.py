@@ -8,11 +8,13 @@ import pandas as pd
 
 import xgboost as xgb
 
+
 def metric(preds, actuals):
     preds = preds.reshape(-1)
     actuals = actuals.reshape(-1)
     assert preds.shape == actuals.shape
     return 100 * np.linalg.norm((actuals - preds) / actuals) / np.sqrt(preds.shape[0])
+
 
 def plot_feature_importances(model, num_features, model_dir):
     data = model.get_score(importance_type='gain')
@@ -63,10 +65,13 @@ if __name__ == '__main__':
 
     params = {
         'verbosity': 1,
-        'nthread': 5,
-        'eta': 0.2, # learning rate, 0.3
+        'nthread': 6,
+        'eta': 0.03, # learning rate, 0.3
         'max_depth': 3, # 6
-        'num_round': 500,
+        'num_round': 1800,
+        'subsample': 0.4,
+        'alpha': 10,
+        'lambda': 10
     }
     num_round = params.pop('num_round')
 
@@ -92,3 +97,4 @@ if __name__ == '__main__':
     print(res)
     model_dir = Path('.')
     pd.DataFrame(res).to_csv(path / 'results.csv')
+    pd.DataFrame(params, index=np.arange(len(params.keys()))).to_csv(path / 'params.csv')
