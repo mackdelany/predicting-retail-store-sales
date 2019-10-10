@@ -67,12 +67,13 @@ if __name__ == '__main__':
         'verbosity': 1,
         'nthread': 6,
         'eta': 0.03, # learning rate, 0.3
-        'max_depth': 3, # 6
-        'num_round': 1800,
-        'subsample': 0.9,
+        'max_depth': 4, # 6
+        'num_round': 1500,
+        'subsample': 0.8,
         'alpha': 10,
         'lambda': 10
     }
+    pd.DataFrame(params, index=np.arange(len(params.keys()))).to_csv(path / 'params.csv')
     num_round = params.pop('num_round')
 
     m = xgb.train(
@@ -97,4 +98,3 @@ if __name__ == '__main__':
     print(res)
     model_dir = Path('.')
     pd.DataFrame(res).to_csv(path / 'results.csv')
-    pd.DataFrame(params, index=np.arange(len(params.keys()))).to_csv(path / 'params.csv')
