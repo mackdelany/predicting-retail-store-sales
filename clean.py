@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import TimeSeriesSplit
 
-from features import lag_all_stores, add_lags_to_single_store, add_sales_per_customer, add_datetime_features_day_of_week, add_datetime_features_week
+from features import lag_all_stores, add_lags_to_single_store, add_sales_per_customer, add_datetime_features_day_of_week, add_datetime_features_week, mean_encode
 
 
 if __name__ == '__main__':
@@ -28,6 +28,7 @@ if __name__ == '__main__':
                 train.loc[i, 'Store'] = (train.loc[i-1, 'Store'] + train.loc[i+1, 'Store'] / 2)
 
     data = train[~train['Store'].isna()]
+    assert sum(data.loc[:, 'Store'].isnull()) == 0
     print('train shape {}'.format(data.shape))
 
     #  why merge with stores here?
@@ -40,9 +41,7 @@ if __name__ == '__main__':
     data['Customers'] = data.groupby(['Store','DayOfWeek'])['Customers'].transform(lambda x: x.fillna(x.mean()))
     data['Sales'] = data.groupby(['Store','DayOfWeek'])['Sales'].transform(lambda x: x.fillna(x.mean()))
 
-    #  think we need this ?
-    le = LabelEncoder()
-    data.loc[:, 'Store'] = le.fit_transform(data['Store'])
+    data = mean_encode(data, col='Store', on='Sales')
 
     cleanup = {
         "StateHoliday": {'0': 0, 'a': 1, 'b': 2, 'c': 3},
@@ -62,6 +61,7 @@ if __name__ == '__main__':
     data = data.loc[mask, :]
     print('train shape {}'.format(data.shape))
 
+    import pdb; pdb.set_trace()
     old_cols = data.columns
     data = data.dropna(axis=1)
     new_cols = data.columns
