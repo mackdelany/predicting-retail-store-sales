@@ -24,9 +24,9 @@ if __name__ == '__main__':
 
     for i, store in enumerate(train.Store):
     
-    if pd.isna(train.loc[i, 'Store']) == True:
-        if np.absolute(train.loc[i-1, 'Store'] - train.loc[i+1, 'Store']) == 2:
-            train.loc[i, 'Store'] = (train.loc[i-1, 'Store'] + train.loc[i+1, 'Store'] / 2)
+        if pd.isna(train.loc[i, 'Store']) == True:
+            if np.absolute(train.loc[i-1, 'Store'] - train.loc[i+1, 'Store']) == 2:
+                train.loc[i, 'Store'] = (train.loc[i-1, 'Store'] + train.loc[i+1, 'Store'] / 2)
 
     data = train[~train['Store'].isna()]
     print('train shape {}'.format(data.shape))
