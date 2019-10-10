@@ -5,10 +5,18 @@ import numpy as np
 #  holidays
 #  linear trend
 
+
+def mean_encode(data, col, on):
+    group = data.groupby(col).mean()
+    mapper = {k: v for k, v in zip(group.index, group.loc[:, on].values)}
+    data.loc[:, col] = data.loc[:, col].replace(mapper)
+    assert len(set(data.loc[:, col])) == group.shape[0]
+    return data
+
+
 def lag_all_stores(raw, column, lags):
     out = []
     stores = raw.Store.unique()
-    assert len(stores) == max(stores) + 1  # is this right???
     for store in stores:
         print('Processing Store ' + str(store))
         store_dataframe = raw[raw['Store'] == store]

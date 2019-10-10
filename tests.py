@@ -5,7 +5,7 @@ def test_lagged_values():
     test = pd.DataFrame(
         {'A': [10, 20, 30, 40, 50],
          'B': [100, 200, 300, 400, 500],
-         'Store': ['one'] * 5,
+         'Store': [1] * 5,
          'Date': pd.date_range(start='2018-01-01', periods=5, freq='1d')}
     )
     data = add_lags_to_single_store(test, 'A', lags=2)
@@ -71,14 +71,14 @@ def test_lag_all_stores():
     test1 = pd.DataFrame(
         {'A': [10, 20, 30, 40, 50],
          'B': [100, 200, 300, 400, 500],
-         'Store': ['one'] * 5,
+         'Store': [0] * 5,
          'Date': pd.date_range(start='2018-01-01', periods=5, freq='1d')}
     )
 
     test2 = pd.DataFrame(
         {'A': [10, 20, 30, 40, 50],
          'B': [100, 200, 300, 400, 500],
-         'Store': ['two'] * 5,
+         'Store': [1] * 5,
          'Date': pd.date_range(start='2018-01-01', periods=5, freq='1d')}
     )
 
@@ -86,12 +86,33 @@ def test_lag_all_stores():
 
     out = lag_all_stores(test, 'B', 2)
 
-    one_test = out[out.loc[:, 'Store'] == 'one']
+    one_test = out[out.loc[:, 'Store'] == 0]
     np.testing.assert_array_equal(one_test.loc[:, 'B-lag-1'].values, np.array([np.nan, 100, 200, 300, 400]))
     np.testing.assert_array_equal(one_test.loc[:, 'B-lag-2'].values, np.array([np.nan, np.nan, 100, 200, 300]))
 
 
     out = lag_all_stores(test, 'A', 2)
-    two_test = out[out.loc[:, 'Store'] == 'two']
+    two_test = out[out.loc[:, 'Store'] == 1]
     np.testing.assert_array_equal(two_test.loc[:, 'A-lag-1'].values, np.array([np.nan, 10, 20, 30, 40]))
     np.testing.assert_array_equal(two_test.loc[:, 'A-lag-2'].values, np.array([np.nan, np.nan, 10, 20, 30]))
+
+
+def test_mean_encoding():
+
+    store1 = pd.DataFrame(
+        {'store': ['A'] * 3,
+         'Sales': [100, 200, 300],
+         'noise': [0, 0, 0]}
+    )
+
+    store2 = pd.DataFrame(
+        {'store': ['B'] * 3,
+         'Sales': [10, 20, 30],
+         'noise': [0, 0, 0]}
+    )
+
+    data = pd.concat([store1, store2], axis=0)
+
+    data = mean_encode(data, col='store', on='Sales')
+
+    np.testing.assert_array_equal(data.loc[:, 'store'], np.array([200, 200, 200, 20, 20, 20]))

@@ -23,7 +23,6 @@ if __name__ == '__main__':
     print('train shape {}'.format(train.shape))
 
     for i, store in enumerate(train.Store):
-    
         if pd.isna(train.loc[i, 'Store']) == True:
             if np.absolute(train.loc[i-1, 'Store'] - train.loc[i+1, 'Store']) == 2:
                 train.loc[i, 'Store'] = (train.loc[i-1, 'Store'] + train.loc[i+1, 'Store'] / 2)
@@ -52,11 +51,11 @@ if __name__ == '__main__':
     data.loc[:, 'Store'] = le.fit_transform(data['Store'])
 
     cleanup = {
-                "StateHoliday": {'0': 0, 'a': 1, 'b': 2, 'c': 3},
-                "Assortment":  {'a': 0, 'b': 1, 'c': 2},
-                "StoreType":  {'a': 0, 'b': 1, 'c': 2, 'd': 3},
-                "PromoInterval":  {'no-promo': 0, 'Feb,May,Aug,Nov': 1, 'Jan,Apr,Jul,Oct': 2, 'Mar,Jun,Sept,Dec': 3}
-            }
+        "StateHoliday": {'0': 0, 'a': 1, 'b': 2, 'c': 3},
+        "Assortment": {'a': 0, 'b': 1, 'c': 2},
+        "StoreType": {'a': 0, 'b': 1, 'c': 2, 'd': 3},
+        "PromoInterval": {'no-promo': 0, 'Feb,May,Aug,Nov': 1, 'Jan,Apr,Jul,Oct': 2, 'Mar,Jun,Sept,Dec': 3}
+    }
     data.replace(cleanup, inplace=True)
 
     data = data.drop('DayOfWeek', axis=1)
