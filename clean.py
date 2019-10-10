@@ -22,9 +22,8 @@ if __name__ == '__main__':
     train = pd.read_csv('data/raw/train.csv')
     print('train shape {}'.format(train.shape))
 
-    for i, store in enumerate(train.Store):
-    
-        if pd.isna(train.loc[i, 'Store']) == True:
+    for i, store_number in enumerate(train.Store):
+        if pd.isna(store_number) == True:
             if np.absolute(train.loc[i-1, 'Store'] - train.loc[i+1, 'Store']) == 2:
                 train.loc[i, 'Store'] = (train.loc[i-1, 'Store'] + train.loc[i+1, 'Store'] / 2)
 
@@ -40,12 +39,6 @@ if __name__ == '__main__':
 
     data['Customers'] = data.groupby(['Store','DayOfWeek'])['Customers'].transform(lambda x: x.fillna(x.mean()))
     data['Sales'] = data.groupby(['Store','DayOfWeek'])['Sales'].transform(lambda x: x.fillna(x.mean()))
-
-    old_cols = data.columns
-    data = data.dropna(axis=1)
-    new_cols = data.columns
-    print('dropping {} columns due to nulls'.format(len(old_cols) - len(new_cols)))
-    print('those cols are {}'.format(set(old_cols).difference(set(new_cols))))
 
     #  think we need this ?
     le = LabelEncoder()
@@ -68,6 +61,12 @@ if __name__ == '__main__':
     mask = data.loc[:, 'Sales'] != 0
     data = data.loc[mask, :]
     print('train shape {}'.format(data.shape))
+
+    old_cols = data.columns
+    data = data.dropna(axis=1)
+    new_cols = data.columns
+    print('dropping {} columns due to nulls'.format(len(old_cols) - len(new_cols)))
+    print('those cols are {}'.format(set(old_cols).difference(set(new_cols))))
 
     print(' ')
     print('data shape before split {}'.format(data.shape))
