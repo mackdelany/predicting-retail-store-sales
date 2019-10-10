@@ -1,3 +1,4 @@
+from time import strptime
 import pandas as pd
 import numpy as np
 
@@ -75,3 +76,90 @@ def add_datetime_features_week(data):
     return data.drop('week', axis=1)
 
 
+
+def identify_competition_and_promo_start_date(store):
+
+    idx_of_stores_with_no_competition = store[store['CompetitionDistance'].isnull()].index
+    idx_of_stores_with_competition_always = store[store['CompetitionOpenSinceMonth'].isnull()][store.CompetitionDistance > 0].index
+
+    mask = store.index.isin(idx_of_stores_with_no_competition.append(idx_of_stores_with_competition_always))
+
+    idx_of_stores_where_competition_opened = store[~mask].index
+
+
+    store.loc[idx_of_stores_with_no_competition,'competitionOpenDate'] = '01/01/2050'
+    store.loc[idx_of_stores_with_competition_always,'competitionOpenDate'] = '01/01/1970'
+
+    store['CompetitionOpenSinceMonth'] = store['CompetitionOpenSinceMonth'].fillna(0).astype(int)
+    store['CompetitionOpenSinceYear'] = store['CompetitionOpenSinceYear'].fillna(0).astype(int)
+
+    for index in idx_of_stores_where_competition_opened:
+        
+        store.at[index,'competitionOpenDate'] = \
+            (str(store.at[index,'CompetitionOpenSinceMonth']) + '/15/' + str(store.at[index,'CompetitionOpenSinceYear']))
+
+    store['competitionOpenDate'] = pd.to_datetime(store['competitionOpenDate'])
+
+
+    idx_of_stores_with_no_promo = store[store['Promo2SinceWeek'].isnull()].index
+
+    mask = store.index.isin(idx_of_stores_with_no_promo)
+    idx_of_stores_with_promos = store[~mask].index
+
+
+    store.loc[idx_of_stores_with_no_promo,'promo2StartDate'] = '01/01/2050'
+
+    store['Promo2SinceWeek'] = store['Promo2SinceWeek'].fillna(0).astype(int)
+    store['Promo2SinceYear'] = store['Promo2SinceYear'].fillna(0).astype(int)
+
+    for index in idx_of_stores_with_promos:
+        store.loc[index,'promo2StartDate'] = (str(min(12,(((store.at[index,'Promo2SinceWeek'] * 7) // 30)+1)))\
+                                                + '/15/' + str(store.at[index,'Promo2SinceYear']))
+        
+    store['promo2StartDate'] = pd.to_datetime(store['promo2StartDate'])
+
+    return store
+
+
+
+
+
+    
+
+def identify_whether_promo2_running(merged_dataset):
+
+    merged_dataset['PromoInterval'] = merged_dataset['PromoInterval'].fillna('no_promo').astype(str)
+
+    def get_month_integers_from_month_strings(month_strings):
+
+        if month_strings == 'no_promo':
+            return 0
+        else:
+            month_array = []
+            month_list = month_strings.split(",") 
+            for month in month_list:
+                if len(month) == 4:
+                    month_array.append(9)
+                else:
+                    month_array.append(strptime(month,'%b').tm_mon)
+
+            return month_array
+
+    merged_dataset['promoMonths'] = merged_dataset['PromoInterval'].apply(get_month_integers_from_month_strings)
+
+    def get_month(date):
+        return date.month   
+
+    merged_dataset['month_test'] = merged_dataset['Date'].apply(get_month)
+
+    for index in range(merged_dataset.shape[0]):
+        if isinstance(merged_dataset.at[index, 'promoMonths'],list) :
+            if (merged_dataset.at[index, 'promo2StartDate'] <= merged_dataset.at[index, 'Date'])\
+                    & (merged_dataset.at[index, 'month_test'] in merged_dataset.at[index, 'promoMonths'] ):
+                merged_dataset.at[index, 'promoMonths'] = 1
+        else :
+            merged_dataset.at[index,'Promo2'] = 0
+    
+    merged_dataset['Promo2'] = merged_dataset['Promo2'].astype(int)
+
+    return merged_dataset

@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import TimeSeriesSplit
 
-from features import lag_all_stores, add_lags_to_single_store, add_sales_per_customer, add_datetime_features_day_of_week, add_datetime_features_week, mean_encode
+from features import lag_all_stores, add_lags_to_single_store, add_sales_per_customer, add_datetime_features_day_of_week, add_datetime_features_week, mean_encode, identify_competition_and_promo_start_date, identify_whether_promo2_running
 
 
 if __name__ == '__main__':
@@ -33,6 +33,9 @@ if __name__ == '__main__':
 
     data = add_sales_per_customer(data, data)
 
+    print('Adding promo and competition start dates')
+    store = identify_competition_and_promo_start_date(store)
+
     #  why merge with stores here?
     data = data.merge(store, how='left', left_on='Store', right_on='Store')
     data = data.sort_values(by=['Date','Store'], ascending=['True','True']).reset_index(drop=True)
@@ -57,10 +60,12 @@ if __name__ == '__main__':
     cleanup = {
         "StateHoliday": {'0': 0, 'a': 1, 'b': 2, 'c': 3},
         "Assortment": {'a': 0, 'b': 1, 'c': 2},
-        "StoreType": {'a': 0, 'b': 1, 'c': 2, 'd': 3},
-        "PromoInterval": {'no-promo': 0, 'Feb,May,Aug,Nov': 1, 'Jan,Apr,Jul,Oct': 2, 'Mar,Jun,Sept,Dec': 3}
+        "StoreType": {'a': 0, 'b': 1, 'c': 2, 'd': 3}
     }
     data.replace(cleanup, inplace=True)
+
+    print('Identifying whether promo2 running on a day')
+    data = identify_whether_promo2_running(data)
 
     data = data.drop('DayOfWeek', axis=1)
     # data = add_datetime_features_day_of_week(data)
@@ -100,6 +105,7 @@ if __name__ == '__main__':
     print(data.loc[:, 'Date'].iloc[0], data.loc[:, 'Date'].iloc[-1])
 
     assert(sum(data.loc[:, 'Sales'] == 0)) == 0
+
 
     lag_column = 'Sales'
     lags = 2
