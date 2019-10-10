@@ -27,12 +27,6 @@ if __name__ == '__main__':
     data = train[~train['Store'].isna()]
     print('train shape {}'.format(data.shape))
 
-    #  drop zero target
-    mask = data.loc[:, 'Sales'] != 0
-    data = data.loc[mask, :]
-    print('train shape {}'.format(data.shape))
-    import pdb; pdb.set_trace()
-
     #  why merge with stores here?
     data = data.merge(store, how='left', left_on='Store', right_on='Store')
     data = data.sort_values(by=['Date','Store'], ascending=['True','True']).reset_index(drop=True)
@@ -64,6 +58,13 @@ if __name__ == '__main__':
     data = data.drop('DayOfWeek', axis=1)
     data = add_datetime_features_day_of_week(data)
     data = add_datetime_features_week(data)
+
+    #  drop zero target
+    print('dropping target')
+    mask = data.loc[:, 'Sales'] != 0
+    data = data.loc[mask, :]
+    print('train shape {}'.format(data.shape))
+
     print(' ')
     print('data shape before split {}'.format(data.shape))
     print(data.loc[:, 'Date'].iloc[0], data.loc[:, 'Date'].iloc[-1])
