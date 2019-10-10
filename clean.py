@@ -71,15 +71,14 @@ if __name__ == '__main__':
     data = data.dropna(subset=['Sales'], axis=0)
     print('train shape after drop of zero sales {}'.format(data.shape))
 
-    assert sum(data.loc[:, 'Store'].isnull()) == 0
-    for col in data.columns:
-        print(col, ' - ', sum(data.loc[:, col].isnull()))
-
     fill_with_token = ['Promo', 'StateHoliday']
-
     for tok in fill_with_token:
         data.loc[:, tok] = data.loc[:, tok].fillna(0)
         assert sum(data.loc[:, tok].isnull()) == 0
+
+    assert sum(data.loc[:, 'Store'].isnull()) == 0
+    for col in data.columns:
+        print(col, ' - ', sum(data.loc[:, col].isnull()))
 
     import pdb; pdb.set_trace()
     old_cols = data.columns
