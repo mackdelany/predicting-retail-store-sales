@@ -121,9 +121,6 @@ def identify_competition_and_promo_start_date(store):
     return store
 
 
-
-
-
     
 
 def identify_whether_promo2_or_competition_running(merged_dataset):
@@ -165,3 +162,16 @@ def identify_whether_promo2_or_competition_running(merged_dataset):
     merged_dataset['Promo2'] = merged_dataset['Promo2'].astype(int)
 
     return merged_dataset
+
+def impute_competition_distance(data):
+
+    data['CompetitionDistance'] = data['CompetitionDistance'] * data['Competition']
+
+    data['CompetitionDistance'] = data['CompetitionDistance'].apply(lambda x: 60000 if x == 0 else x)
+
+    return data
+
+
+
+
+
