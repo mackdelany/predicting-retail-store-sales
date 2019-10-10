@@ -43,6 +43,7 @@ if __name__ == '__main__':
     print('Filling customer and sales nulls with store / day of week mean')
     data['Customers'] = data.groupby(['Store','DayOfWeek'])['Customers'].transform(lambda x: x.fillna(x.mean()))
     data['Customers'] = data.groupby(['Store'])['Customers'].transform(lambda x: x.fillna(x.mean()))
+    data['Customers'] = data['Customers'].transform(lambda x: x.fillna(x.mean()))
     data['Sales'] = data.groupby(['Store','DayOfWeek'])['Sales'].transform(lambda x: x.fillna(x.mean()))
     data['Sales'] = data.groupby(['Store'])['Sales'].transform(lambda x: x.fillna(x.mean()))
     print('Nulls after filling:')
