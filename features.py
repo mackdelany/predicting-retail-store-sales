@@ -18,8 +18,9 @@ def lag_all_stores(raw, column, lags):
     out = []
     # stores = raw.Store.unique()
     stores = set(raw.loc[:, 'Store'])
+    print('lagging stores')
     for store in stores:
-        print('Processing Store ' + str(store))
+        # print('Processing Store ' + str(store))
         store_dataframe = raw[raw['Store'] == store]
         store_dataframe = add_lags_to_single_store(store_dataframe, column, lags)
         out.append(store_dataframe)
@@ -49,8 +50,12 @@ def add_sales_per_customer(historical, test):
 
     data = historical.groupby('Store').mean()
     data.loc[:, 'sales-per-customer'] = data.loc[:, 'Sales'] / data.loc[:, 'Customers']
-    data = data.loc[:, ['Sales', 'Customers', 'sales-per-customer']]
-    data.columns = ['sales', 'customers', 'sales-per-customer']
+    data = data.loc[:, ['Customers', 'sales-per-customer']]
+    data.columns = ['customers', 'sales-per-customer']
+    data.fillna({
+        'customers': np.mean(data.loc[:, 'customers']),
+        'sales-per-customer': np.mean(data.loc[:, 'sales-per-customer'])
+    }, inplace=True)
     test = test.merge(data, on='Store')
     return test
 

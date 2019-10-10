@@ -27,8 +27,13 @@ def plot_feature_importances(model, num_features, model_dir):
     f.savefig(os.path.join(model_dir, 'importances.png'))
 
 if __name__ == '__main__':
-    scenario = 'scenario_1_control'
-    fold = 0
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data', default='local', nargs='?')
+    parser.add_argument('--cpu', default=8, nargs='?')
+    args = parser.parse_args()
+
+    scenario = 'scenario_2_lags'
+    fold = 2
     dataset = [
         'train_X', 'train_Y', 'test_X', 'test_Y'
     ]
@@ -58,10 +63,10 @@ if __name__ == '__main__':
 
     params = {
         'verbosity': 1,
-        'nthread': 6,
-        'eta': 0.3, # learning rate, 0.3
-        'max_depth': 5, # 6
-        'num_round': 20
+        'nthread': 5,
+        'eta': 0.2, # learning rate, 0.3
+        'max_depth': 3, # 6
+        'num_round': 500,
     }
     num_round = params.pop('num_round')
 

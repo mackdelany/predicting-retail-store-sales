@@ -31,6 +31,8 @@ if __name__ == '__main__':
     assert sum(data.loc[:, 'Store'].isnull()) == 0
     print('train shape {}'.format(data.shape))
 
+    data = add_sales_per_customer(data, data)
+
     #  why merge with stores here?
     data = data.merge(store, how='left', left_on='Store', right_on='Store')
     data = data.sort_values(by=['Date','Store'], ascending=['True','True']).reset_index(drop=True)
@@ -54,24 +56,37 @@ if __name__ == '__main__':
     data.replace(cleanup, inplace=True)
 
     data = data.drop('DayOfWeek', axis=1)
-    data = add_datetime_features_day_of_week(data)
-    data = add_datetime_features_week(data)
+    # data = add_datetime_features_day_of_week(data)
+    # data = add_datetime_features_week(data)
+    data.loc[:, 'month'] = data.loc[:, 'Date'].dt.month
+    data.loc[:, 'week'] = data.loc[:, 'Date'].dt.week
+    data.loc[:, 'day-of-week'] = data.loc[:, 'Date'].dt.dayofweek
     assert sum(data.loc[:, 'Store'].isnull()) == 0
 
     #  drop zero target
     print('dropping target')
-    print('train shape before drop {}'.format(data.shape))
+    print('train shape before drop of zero sales {}'.format(data.shape))
     mask = data.loc[:, 'Sales'] != 0
     data = data.loc[mask, :]
     data = data.dropna(subset=['Sales'], axis=0)
-    print('train shape after drop {}'.format(data.shape))
+    print('train shape after drop of zero sales {}'.format(data.shape))
 
     assert sum(data.loc[:, 'Store'].isnull()) == 0
+    for col in data.columns:
+        print(col, ' - ', sum(data.loc[:, col].isnull()))
+
+    fill_with_token = ['Promo', 'StateHoliday']
+
+    for tok in fill_with_token:
+        data.loc[:, tok].fillna(0, inplace=True)
+
+    import pdb; pdb.set_trace()
     old_cols = data.columns
     data = data.dropna(axis=1)
     new_cols = data.columns
     print('dropping {} columns due to nulls'.format(len(old_cols) - len(new_cols)))
     print('those cols are {}'.format(set(old_cols).difference(set(new_cols))))
+    print('train shape after drop {}'.format(data.shape))
 
     print(' ')
     print('data shape before split {}'.format(data.shape))
@@ -89,12 +104,13 @@ if __name__ == '__main__':
     data2 = data2.dropna(subset=['Sales-lag-1','Sales-lag-2'], axis=0).reset_index(drop=True)
 
     data = data.drop('Date', axis=1)
-    # data2 = data.drop('Date', axis=1) - this is done in the lagging
+    data2 = data2.drop('Date', axis=1)
 
     def split_dataset(data, base, validation_sets):
         data = data.copy()
         print('starting {}'.format(base))
-        tscv = TimeSeriesSplit(max_train_size=round(max_train_size*data.shape[0]), n_splits=validation_sets)
+        # tscv = TimeSeriesSplit(max_train_size=round(max_train_size*data.shape[0]), n_splits=validation_sets)
+        tscv = TimeSeriesSplit(n_splits=validation_sets)
         for fold, (train_index, test_index) in enumerate(tscv.split(data)):
             fold_name = 'fold' + str(fold)
             os.makedirs(base + fold_name, exist_ok=True)
