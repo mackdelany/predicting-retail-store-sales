@@ -88,16 +88,12 @@ if __name__ == '__main__':
         data.loc[:, tok] = data.loc[:, tok].fillna(0)
         assert sum(data.loc[:, tok].isnull()) == 0
 
-<<<<<<< HEAD
-    
-=======
     data.loc[:, 'CompetitionDistance'].fillna(data.loc[:, 'CompetitionDistance'].median(), inplace=True)
 
     assert sum(data.loc[:, 'Store'].isnull()) == 0
     for col in data.columns:
         print(col, ' - ', sum(data.loc[:, col].isnull()))
 
->>>>>>> 7ba6dd1ebff20fc76bd2737498066c030d817890
     old_cols = data.columns
     data = data.dropna(axis=1)
     new_cols = data.columns
@@ -110,7 +106,6 @@ if __name__ == '__main__':
     print(data.loc[:, 'Date'].iloc[0], data.loc[:, 'Date'].iloc[-1])
 
     assert(sum(data.loc[:, 'Sales'] == 0)) == 0
-
 
     lag_column = 'Sales'
     lags = 2

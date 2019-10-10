@@ -69,7 +69,7 @@ if __name__ == '__main__':
         'eta': 0.03, # learning rate, 0.3
         'max_depth': 3, # 6
         'num_round': 1800,
-        'subsample': 0.4,
+        'subsample': 0.9,
         'alpha': 10,
         'lambda': 10
     }
